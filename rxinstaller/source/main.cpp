@@ -66,19 +66,18 @@ void userSettingsCRC(void *buffer) {
 	slot[0x39] = CRC1; slot[0x7f] = CRC2;
 }
 
-/*
 //---------------------------------------------------------------------------------
-void saveFile(char *name, void *buffer, int size) {
+void saveFile(const char *name, void *buffer, int size) {
 //---------------------------------------------------------------------------------
 	FILE *out = fopen(name,"wb");
 	if (out) {
-		fwrite(buffer, 1, 1024, out);
+		fwrite(buffer, 1, size, out);
 		fclose(out);
+		iprintf("\x1b[%d;0H finished writing %s", 8 + ITEMS_START_ROW, name);
 	} else {
-		printf("couldn't open %s for writing\n",name);
+		iprintf("\x1b[%d;0H couldn't open %s for writing\n", 8 + ITEMS_START_ROW, name);
 	}
 }
-*/
 
 //---------------------------------------------------------------------------------
 void showPatchList (const vector<patchEntry>& patchList, int startRow) {
@@ -148,6 +147,11 @@ int main(int argc, char **argv) {
 	iprintf("   >> rxTools Edition <<  \n");
 	iprintf("\n\n");
 
+	if(!fatInitDefault()){
+		iprintf("      fat init error\n");
+		halt();
+	}
+
 	int patchfile = 0;
 	int header;
 	rawDataOffset=0;
@@ -213,6 +217,14 @@ int main(int argc, char **argv) {
 		iprintf ("%.7sropCustom.txt", patch->description.c_str());
 	}
 
+	// read header
+	readFirmware(0,workbuffer,42);
+
+	u32 userSettingsOffset = (workbuffer[32] + (workbuffer[33] << 8))<<3;
+
+	// read User Settings
+	readFirmware(userSettingsOffset,workbuffer,512);
+
 	while(1) {
 
 		// Show cursor
@@ -230,16 +242,16 @@ int main(int argc, char **argv) {
 		if (pressed & KEY_UP) 		fwSelected -= 1;
 		if (pressed & KEY_DOWN) 	fwSelected += 1;
 
-		if (pressed & KEY_A) break;
-
 		if (fwSelected < 0) 	fwSelected = patch_count - 1;		// Wrap around to bottom of list
 		if (fwSelected > (patch_count - 1))		fwSelected = 0;		// Wrap around to top of list
 
-
+		if (pressed & KEY_A) break;
+		if (pressed & KEY_X) {
+			saveFile("dump", workbuffer, 512);
+		}
 	}
 
 	iprintf ("\x1b[5;0H\x1b[J");
-
 
     const patchEntry *selectedPatch;
     if (fwSelected < (int)patches.size()) {
@@ -249,14 +261,6 @@ int main(int argc, char **argv) {
     }
 
 	iprintf("Patching for %s\n\n",selectedPatch->description.c_str());
-
-	// read header
-	readFirmware(0,workbuffer,42);
-
-	u32 userSettingsOffset = (workbuffer[32] + (workbuffer[33] << 8))<<3;
-
-	// read User Settings
-	readFirmware(userSettingsOffset,workbuffer,512);
 
 
 	aseek(patchfile,selectedPatch->fileoffset,SEEK_SET);
@@ -299,11 +303,6 @@ int main(int argc, char **argv) {
 		int i=0;
 		char pathBegin[]="YS:/";
 
-
-		if(!fatInitDefault()){
-			iprintf("      fat init error\n");
-			halt();
-		}
 
 		FILE *text=fopen("ropCustom.txt","r");
 
@@ -382,7 +381,6 @@ int main(int argc, char **argv) {
 
 	userSettingsCRC(workbuffer);
 	userSettingsCRC(workbuffer+256);
-
 
 	iprintf("\n\n\n\n\n      Writing ... ");
 	int ret = writeFirmware(userSettingsOffset,workbuffer,512);
