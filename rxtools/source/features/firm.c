@@ -208,6 +208,7 @@ int rxMode(int emu)
 			L"Reboot rxTools and try again.\n";
 		goto fail;
 	}
+	goto test;
 
 	r = getMpInfo();
 	switch (r) {
@@ -310,6 +311,7 @@ int rxMode(int emu)
 	f_write(&fd, (void *)FIRM_ADDR, 0x200000, &br);
 	f_close(&fd);
 
+test:
 	r = loadExecReboot(); // This won't return if it succeeds.
 	msg = L"Failed to load reboot.bin: %d\n"
 		L"Check your installation.\n";
