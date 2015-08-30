@@ -16,6 +16,7 @@
 
 @ k9 fix flags
 .section .patch.k9.flags, "a"
+.thumb
 
     .word 0x360003
     .word 0x10100000

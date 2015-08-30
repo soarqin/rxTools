@@ -428,7 +428,7 @@ int CheckInstallationData(){
 void InstallConfigData(){
 	char path[64], pathL[64], pathR[64];
 
-	if(CheckInstallationData() == 0)
+//	if(CheckInstallationData() == 0)
 		return;
 
 	trySetLangFromTheme(0);

@@ -19,6 +19,6 @@
 .arm
 .align 2
 
-	.word CreateMyThread
+	.word 0x0801A6E0
 
 .pool

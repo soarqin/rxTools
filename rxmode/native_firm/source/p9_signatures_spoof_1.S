@@ -24,3 +24,5 @@
 	add	sp, #0x138
 	pop 	{r4-r6,pc}
 #endif
+	.hword	0
+.pool

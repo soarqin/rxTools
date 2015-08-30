@@ -19,7 +19,7 @@
 .thumb
 .align 2
 
-	ldr 	r2, =keyx
+	ldr 	r2, =0x801A6D0
 	mov	    r1, #5
 	mov 	r0, #0x25
 	bl		0x080575B4

@@ -1,5 +1,4 @@
 @ Copyright (C) 2015 The PASTA Team
-@ Originally written by Roxas75
 @
 @ This program is free software; you can redistribute it and/or
 @ modify it under the terms of the GNU General Public License
@@ -14,16 +13,44 @@
 @ along with this program; if not, write to the Free Software
 @ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef PLATFORM_KTR
-        .section .rodata.keyx, "a"
-        .global keyx
-        .type keyx, %object
-keyx:
-        .skip 16, 0
-#endif
+.text
 
-        .section .rodata.label, "a"
-        .global label
-        .type label, %object
-label:
-        .skip 4, 0
+.thumb
+.global fopen9
+.type fopen9, %function
+	fopen9:
+		push {r0-r6, lr}
+		ldr r4, =0x0805B181
+		blx r4
+		pop {r0-r6, pc}
+.pool
+
+.thumb
+.global fwrite9
+.type fwrite9, %function
+	fwrite9:
+		push {r4, lr}
+		ldr r4, =0x0805C4D1
+		blx r4
+		pop {r4, pc}
+.pool
+
+.thumb
+.global fread9
+.type fread9, %function
+	fread9:
+		push {r4, lr}
+		ldr r4, =0x0804D9B1
+		blx r4
+		pop {r4, pc}
+.pool
+
+.thumb
+.global fclose9
+.type fclose9, %function
+	fclose9:
+		push {r4, lr}
+		ldr r4, =0x0805B26D
+		blx r4
+		pop {r4, pc}
+.pool

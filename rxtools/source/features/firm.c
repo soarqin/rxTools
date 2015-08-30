@@ -208,7 +208,7 @@ int rxMode(int emu)
 			L"Reboot rxTools and try again.\n";
 		goto fail;
 	}
-
+goto test;
 	r = getMpInfo();
 	switch (r) {
 		case MPINFO_KTR:
@@ -305,11 +305,31 @@ int rxMode(int emu)
 			f_read(&fd, p, shdr.sh_size, &br);
 		}
 	}
+	if(sysver < 7){
+#define NAT_SIZE	0xEBC00
+#define KEYFILENAME	"slot0x25KeyX.bin"
+		for(int i = 0; i < NAT_SIZE; i+=0x4){
+			if(!strcmp((char*)(uintptr_t)FIRM_ADDR + i, "InsertKeyXHere!")){
+				File tempfile;
+				if (!FileOpen(&tempfile, KEYFILENAME, 0))
+				{
+					goto fail;
+				}
+				FileRead(&tempfile, (void *)((uintptr_t)FIRM_ADDR + i), 16, 0);
+				FileClose(&tempfile);
+			}
+			if(*((unsigned int*)(uintptr_t)(FIRM_ADDR + i)) == 0xAAAABBBB){
+				*((unsigned int*)(uintptr_t)(FIRM_ADDR + i)) = (checkEmuNAND() / 0x200) - 1;
+			}
+		}
+#undef NAT_SIZE
+#undef KEYFILENAME
+	}
 
 	f_open(&fd, "rxtools/data/NATIVE_FIRM.BIN", FA_WRITE | FA_CREATE_ALWAYS);
 	f_write(&fd, (void *)FIRM_ADDR, 0x200000, &br);
 	f_close(&fd);
-
+test:
 	r = loadExecReboot(); // This won't return if it succeeds.
 	msg = L"Failed to load reboot.bin: %d\n"
 		L"Check your installation.\n";
